@@ -9,11 +9,10 @@
             height: 100%; 
             margin: 0; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Fallback color while image loads */
             background-color: #1a1a1a; 
-            /* Random River Background via Picsum */
+            /* THE FIX: Fixed high-quality image from Pixabay */
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
-                        url('https://picsum.photos/1920/1080?river');
+                        url('https://cdn.pixabay.com/photo/2016/11/22/19/33/sea-1850228_1280.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -38,7 +37,6 @@
             text-shadow: 2px 2px 15px rgba(0,0,0,0.8);
         }
 
-        /* The Blended Button */
         #openModal {
             position: fixed;
             bottom: 30px;
@@ -52,6 +50,7 @@
             border-radius: 30px;
             transition: all 0.4s ease;
             font-size: 1.2rem;
+            z-index: 10;
         }
         #openModal:hover { 
             color: white; 
@@ -66,7 +65,9 @@
             font-size: 0.7rem;
             color: rgba(255,255,255,0.3);
             text-decoration: none;
+            z-index: 10;
         }
+        .photo-credit:hover { color: white; }
 
         #modal {
             display: none;
@@ -129,7 +130,7 @@
 
     <button id="openModal">+</button>
 
-    <a href="https://unsplash.com/s/photos/river" target="_blank" class="photo-credit">Image Source</a>
+    <a href="https://pixabay.com/photos/sea-fog-ocean-waves-ocean-waves-1850228/" target="_blank" class="photo-credit">Image Source</a>
 
     <div id="modal">
         <div class="modal-content">
@@ -160,7 +161,6 @@
         const display = document.getElementById('displayText');
         const input = document.getElementById('userInput');
 
-        // Fetch a random message from the database
         async function getRandomSubmission() {
             try {
                 const { data, error } = await supabaseClient
@@ -179,16 +179,14 @@
             }
         }
 
-        // Handle the submission logic
         async function submitText() {
             const text = input.value.trim();
             if (!text) return;
 
-            // Updated Regex to include letters, numbers, standard punctuation, and smart quotes
             const allowedChars = /^[a-zA-Z0-9\s;,.?!'\"\-\+&\u2018\u2019\u201C\u201D]+$/;
             
             if (!allowedChars.test(text)) {
-                alert("Character not allowed. Please use only letters, numbers, and ;,.?!'\"-+&");
+                alert("Only letters, numbers, and ;,.?!'\"-+& are allowed.");
                 return;
             }
 
@@ -201,236 +199,10 @@
                 closeModal();
                 alert("Submission received!");
             } else {
-                console.error(error);
-                alert("Submission failed. Ensure you aren't using forbidden characters.");
-            }<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymous Board</title>
-    <style>
-        body, html { 
-            height: 100%; 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a; 
-            /* THE FIX: Using Unsplash Featured pool for 'river' specifically */
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
-                        url('https://images.unsplash.com/featured/?river');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: white;
-            overflow: hidden;
-        }
-
-        .container {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 0 15%;
-        }
-
-        #displayText {
-            font-size: 2.5rem;
-            font-weight: 300;
-            line-height: 1.4;
-            max-width: 800px;
-            text-shadow: 2px 2px 15px rgba(0,0,0,0.8);
-        }
-
-        #openModal {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.2);
-            padding: 10px 25px;
-            cursor: pointer;
-            border-radius: 30px;
-            transition: all 0.4s ease;
-            font-size: 1.2rem;
-            z-index: 10;
-        }
-        #openModal:hover { 
-            color: white; 
-            border-color: white; 
-            background: rgba(255,255,255,0.05); 
-        }
-
-        .photo-credit {
-            position: fixed;
-            bottom: 10px;
-            right: 15px;
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.3);
-            text-decoration: none;
-            z-index: 10;
-        }
-
-        #modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 100;
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #333;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            padding: 12px;
-            border-radius: 6px;
-            resize: none;
-            box-sizing: border-box;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .input-note {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 10px;
-            line-height: 1.4;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .btn-send { background: #fff; color: #000; border: none; padding: 8px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-close { background: transparent; color: #888; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1 id="displayText">Loading...</h1>
-    </div>
-
-    <button id="openModal">+</button>
-
-    <a href="https://unsplash.com/s/photos/river" target="_blank" class="photo-credit">Image Source</a>
-
-    <div id="modal">
-        <div class="modal-content">
-            <h3 style="margin-top: 0; font-weight: 400;">Submit Anonymously</h3>
-            <textarea id="userInput" maxlength="280" placeholder="Your thoughts..."></textarea>
-            
-            <div class="input-note">
-                Allowed: A-Z, 0-9, and ; , . ? ! ' " - + &<br>
-                Please type manually. Copy-pasting smart quotes or hidden symbols will cause errors.
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn-close" onclick="closeModal()">Cancel</button>
-                <button class="btn-send" onclick="submitText()">Send</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // SUPABASE CONFIG
-    const supabaseUrl = 'https://gklqwymwbyqeqiqkvdbl.supabase.co';
-    const supabaseKey = 'sb_publishable_bgbE_43-S430QZ8GtfI8dw_WG-oB0MN';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-    const modal = document.getElementById('modal');
-    const btn = document.getElementById('openModal');
-    const display = document.getElementById('displayText');
-    const input = document.getElementById('userInput');
-
-    // --- NEW: Dynamic Background Logic ---
-    function setRandomBackground() {
-        // The Date.now() adds a unique number so the browser doesn't cache the grey screen
-        const randomUrl = `https://images.unsplash.com/featured/?river&sig=${Date.now()}`;
-        document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${randomUrl}')`;
-    }
-
-    async function getRandomSubmission() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('submissions')
-                .select('content')
-                .eq('is_approved', true);
-            
-            if (data && data.length > 0) {
-                const randomEntry = data[Math.floor(Math.random() * data.length)];
-                display.innerText = randomEntry.content;
-            } else {
-                display.innerText = "No approved submissions yet.";
+                alert("Submission failed. Check your characters.");
             }
-        } catch (err) {
-            display.innerText = "Connection error. Please refresh.";
-        }
-    }
-
-    async function submitText() {
-        const text = input.value.trim();
-        if (!text) return;
-
-        const allowedChars = /^[a-zA-Z0-9\s;,.?!'\"\-\+&\u2018\u2019\u201C\u201D]+$/;
-        
-        if (!allowedChars.test(text)) {
-            alert("Character not allowed. Please use only letters, numbers, and ;,.?!'\"-+&");
-            return;
         }
 
-        const { error } = await supabaseClient
-            .from('submissions')
-            .insert([{ content: text }]);
-
-        if (!error) {
-            input.value = "";
-            closeModal();
-            alert("Submission received!");
-        } else {
-            alert("Submission failed. Check your characters.");
-        }
-    }
-
-    // Modal Controls
-    btn.onclick = () => {
-        modal.style.display = "block";
-        input.focus();
-    }
-    function closeModal() { modal.style.display = "none"; }
-    window.onclick = (event) => { if (event.target == modal) closeModal(); }
-
-    // Run both on load
-    setRandomBackground();
-    getRandomSubmission();
-</script>
-</body>
-</html>
-        }
-
-        // Modal Controls
         btn.onclick = () => {
             modal.style.display = "block";
             input.focus();
@@ -438,7 +210,6 @@
         function closeModal() { modal.style.display = "none"; }
         window.onclick = (event) => { if (event.target == modal) closeModal(); }
 
-        // Load content on page start
         getRandomSubmission();
     </script>
 </body>
