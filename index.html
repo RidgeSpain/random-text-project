@@ -1,43 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Board</title>
     <style>
-        body, html { height: 100%; margin: 0; font-family: sans-serif; }
-        
-        /* The Center Text */
+        /* --- VISUAL STYLING --- */
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212; /* Fallback background */
+            color: white;
+            overflow: hidden;
+        }
+
+        /* The Center Text Display */
         .container {
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #1a1a1a; /* Placeholder background */
-            color: white;
             text-align: center;
-            padding: 40px;
+            padding: 0 15%;
         }
 
-        /* The Blended Button */
+        #displayText {
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: 1.4;
+            max-width: 800px;
+        }
+
+        /* The Blended Button at the Bottom */
         #openModal {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Blends in */
-            color: rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            font-size: 1.2rem;
             cursor: pointer;
-            border-radius: 4px;
-            transition: 0.3s;
+            border-radius: 30px;
+            transition: all 0.4s ease;
+            z-index: 10;
         }
-        #openModal:hover { color: white; border-color: white; }
+        #openModal:hover {
+            color: white;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
 
-        /* Simple Popup/Modal */
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); }
-        .modal-content { 
-            background: #333; padding: 20px; border-radius: 8px;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        /* Popup / Modal Styling */
+        #modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
         }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-send { background: #fff; color: #000; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-close { background: transparent; color: #888; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -50,76 +110,79 @@
 
     <div id="modal">
         <div class="modal-content">
-            <textarea id="userInput" maxlength="280" placeholder="Type here..."></textarea><br>
-            <button onclick="submitText()">Send</button>
-            <button onclick="closeModal()">Close</button>
+            <h3 style="margin-top: 0;">Submit Anonymously</h3>
+            <textarea id="userInput" maxlength="280" placeholder="Write something..."></textarea>
+            <div class="modal-buttons">
+                <button class="btn-close" onclick="closeModal()">Cancel</button>
+                <button class="btn-send" onclick="submitText()">Send</button>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // REPLACE THESE with your actual Supabase info
+        const supabaseUrl = 'https://gklqwymwbyqeqiqkvdbl.supabase.co';
+        const supabaseKey = 'sb_publishable_bgbE_43-S430QZ8GtfI8dw_WG-oB0MN';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const modal = document.getElementById('modal');
+        const btn = document.getElementById('openModal');
+        const display = document.getElementById('displayText');
+        const input = document.getElementById('userInput');
+
+        // Fetch a random submission
+        async function getRandomSubmission() {
+            const { data, error } = await supabaseClient
+                .from('submissions')
+                .select('content')
+                .eq('is_approved', true);
+            
+            if (data && data.length > 0) {
+                const randomEntry = data[Math.floor(Math.random() * data.length)];
+                display.innerText = randomEntry.content;
+            } else {
+                display.innerText = "No approved submissions found.";
+            }
+        }
+
+        // Handle the submission
+        async function submitText() {
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            // Updated characters: letters, numbers, spaces, and ; , . ? ! ' " - + &
+            const allowedChars = /^[a-zA-Z0-9\s;,.?!'\"\-\+&]+$/;
+            
+            if (!allowedChars.test(text)) {
+                alert("Only letters, numbers, and ;,.?!'\"-+& are allowed.");
+                return;
+            }
+
+            // Send to database
+            // Note: Your Supabase Trigger will handle "is_approved" logic (the silent block)
+            const { error } = await supabaseClient
+                .from('submissions')
+                .insert([{ content: text }]);
+
+            if (error) {
+                console.error("Error:", error);
+                alert("Error sending submission.");
+            } else {
+                input.value = "";
+                closeModal();
+                alert("Submission received!");
+            }
+        }
+
+        // Modal Controls
+        btn.onclick = () => modal.style.display = "block";
+        function closeModal() { modal.style.display = "none"; }
+        window.onclick = (event) => { if (event.target == modal) closeModal(); }
+
+        // Start by getting a random message
+        getRandomSubmission();
+    </script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script type="text/javascript">
-    // 2. Initialize with a unique name 'supabaseClient' to avoid the error
-    const supabaseUrl = 'https://gklqwymwbyqeqiqkvdbl.supabase.co';
-    const supabaseKey = 'sb_publishable_bgbE_43-S430QZ8GtfI8dw_WG-oB0MN';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // 3. Elements from your HTML
-    const modal = document.getElementById('modal');
-    const btn = document.getElementById('openModal');
-    const display = document.getElementById('displayText');
-    const input = document.getElementById('userInput');
-
-    // 4. Function to get a random submission
-    async function getRandomSubmission() {
-        const { data, error } = await supabaseClient
-            .from('submissions')
-            .select('content')
-            .eq('is_approved', true);
-        
-        if (data && data.length > 0) {
-            const randomEntry = data[Math.floor(Math.random() * data.length)];
-            display.innerText = randomEntry.content;
-        } else {
-            display.innerText = "No submissions yet. Be the first!";
-        }
-    }
-
-    // 5. Function to handle the anonymous submission
-    async function submitText() {
-        const text = input.value;
-        
-        // Simple character check (A-Z, 0-9, and ;,.?!)
-        const allowedChars = /^[a-zA-Z0-9\s;,.?!]+$/;
-        if (!allowedChars.test(text)) {
-            alert("Only letters, numbers, and ;,.?! are allowed.");
-            return;
-        }
-
-        const { error } = await supabaseClient
-            .from('submissions')
-            .insert([{ content: text }]);
-
-        // Clear input and close modal immediately for that "anonymous" feel
-        input.value = "";
-        modal.style.display = "none";
-        alert("Submission received!"); 
-    }
-
-    // 6. Button Logic
-    btn.onclick = () => modal.style.display = "block";
-    
-    function closeModal() {
-        modal.style.display = "none";
-    }
-
-    // Close if they click outside the box
-    window.onclick = (event) => {
-        if (event.target == modal) modal.style.display = "none";
-    }
-
-    // 7. Load a random message immediately when page opens
-    getRandomSubmission();
-</script>
 </html>
