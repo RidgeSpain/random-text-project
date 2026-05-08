@@ -1,3 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body, html { height: 100%; margin: 0; font-family: sans-serif; }
+        
+        /* The Center Text */
+        .container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a; /* Placeholder background */
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* The Blended Button */
+        #openModal {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Blends in */
+            color: rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        #openModal:hover { color: white; border-color: white; }
+
+        /* Simple Popup/Modal */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); }
+        .modal-content { 
+            background: #333; padding: 20px; border-radius: 8px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="displayText">Loading...</h1>
+    </div>
+
+    <button id="openModal">+</button>
+
+    <div id="modal">
+        <div class="modal-content">
+            <textarea id="userInput" maxlength="280" placeholder="Type here..."></textarea><br>
+            <button onclick="submitText()">Send</button>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+</body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script type="text/javascript">
@@ -63,3 +122,4 @@
     // 7. Load a random message immediately when page opens
     getRandomSubmission();
 </script>
+</html>
